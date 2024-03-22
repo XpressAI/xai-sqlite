@@ -1,4 +1,4 @@
-from xai_components.base import InArg, OutArg, InCompArg, Component, BaseComponent, xai_component
+from xai_components.base import InArg, OutArg, InCompArg, Component, BaseComponent, xai_component, dynalist
 import sqlite3
 
 
@@ -33,7 +33,7 @@ class SqliteWithTransaction(Component):
 @xai_component
 class SqliteExecute(Component):
     query: InCompArg[str]
-    args: InArg[list]
+    args: InArg[dynalist]
     
     def execute(self, ctx):
         db = ctx['sqlite_db']
@@ -51,35 +51,43 @@ class SqliteExecuteScript(Component):
     def execute(self, ctx):
         db = ctx['sqlite_db']
         
-        with app.open_resource(self.file_path.value, mode='r') as f:
+        with open(self.file_path.value, 'r') as f:
             db.cursor().executescript(f.read())
 
 
 @xai_component
 class SqliteFetchOne(Component):
     query: InCompArg[str]
-    args: InArg[list]
+    args: InArg[dynalist]
     result: OutArg[dict]
     
     def execute(self, ctx):
         db = ctx['sqlite_db']
         
         if self.args.value is None:
-            self.result.value = db.execute(self.query.value).fetchone()
+            value = db.execute(self.query.value).fetchone()
+            self.result.value = {k: value[k] for k in value.keys()}
         else:
-            self.result.value = db.execute(self.query.value, tuple(self.args.value)).fetchone()
+            value = db.execute(self.query.value, tuple(self.args.value)).fetchone()
+            self.result.value = {k: value[k] for k in value.keys()}
 
 
 @xai_component
 class SqliteFetchAll(Component):
     query: InCompArg[str]
-    args: InArg[list]
+    args: InArg[dynalist]
     result: OutArg[list]
     
     def execute(self, ctx):
         db = ctx['sqlite_db']
         
         if self.args.value is None:
-            self.result.value = db.execute(self.query.value).fetchall()
+            values = db.execute(self.query.value).fetchall()
         else:
-            self.result.value = db.execute(self.query.value, tuple(self.args.value)).fetchall()
+            values = db.execute(self.query.value, tuple(self.args.value)).fetchall()
+
+        ret = []
+        for item in values:
+            ret.append({k: item[k] for k in item.keys()})
+
+        self.result.value = ret
