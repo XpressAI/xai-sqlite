@@ -4,6 +4,16 @@ import sqlite3
 
 @xai_component
 class SqliteOpenDB(Component):
+    """Opens a connection to the SQLite database.
+
+    This component opens a connection to a specified SQLite database file and prepares the database for executing queries.
+
+    ##### inPorts:
+    - file_name: Name of the SQLite database file to connect to.
+
+    ##### outPorts:
+    -  A callable function that returns the database connection.
+    """
     file_name: InCompArg[str]
     
     def execute(self, ctx):
@@ -17,6 +27,17 @@ class SqliteOpenDB(Component):
 
 @xai_component
 class SqliteWithTransaction(Component):
+    """Executes multiple SQLite operations in a transaction.
+
+    This component ensures that all SQLite operations inside the transaction are either fully completed or rolled back in case of an error.
+
+    ##### inPorts:
+    - A function to retrieve the SQLite database connection.
+
+    ##### outPorts:
+    - in_transaction: The component or series of operations to be executed within the transaction.
+    - The SQLite database connection used in the transaction.
+    """
     in_transaction: BaseComponent
     
     def execute(self, ctx):
@@ -29,15 +50,24 @@ class SqliteWithTransaction(Component):
         db.close()
         ctx['sqlite_db'] = None
 
-
+ 
 @xai_component
 class SqliteExecute(Component):
+    """Executes an SQL query on the SQLite database.
+
+    This component executes a specified SQL query, with or without parameters, on the currently open SQLite database.
+
+    ##### inPorts:
+    - query: The SQL query to execute.
+    - args: A list of arguments to pass into the SQL query (optional).
+
+    """
     query: InCompArg[str]
     args: InArg[dynalist]
     
     def execute(self, ctx):
         db = ctx['sqlite_db']
-        
+
         if self.args.value is None:
             db.execute(self.query.value)
         else:
@@ -46,24 +76,44 @@ class SqliteExecute(Component):
 
 @xai_component
 class SqliteExecuteScript(Component):
+    """Executes a SQL script from a file on the SQLite database.
+
+    This component reads an SQL script from a file and executes it on the currently open SQLite database.
+
+    ##### inPorts:
+    - file_path: Path to the SQL script file.
+
+   
+    """
     file_path: InCompArg[str]
     
     def execute(self, ctx):
         db = ctx['sqlite_db']
-        
+
         with open(self.file_path.value, 'r') as f:
-            db.cursor().executescript(f.read())
+            db.cursor().executescript(f.read())  
 
 
 @xai_component
 class SqliteFetchOne(Component):
+    """Fetches a single row from the SQLite database.
+
+    This component executes a query and fetches one row from the database result set.
+
+    ##### inPorts:
+    - query: The SQL query to execute.
+    - args: A list of arguments to pass into the query (optional).
+
+    ##### outPorts:
+    - result: The fetched row, returned as a dictionary.
+    """
     query: InCompArg[str]
     args: InArg[dynalist]
     result: OutArg[dict]
     
     def execute(self, ctx):
         db = ctx['sqlite_db']
-        
+
         if self.args.value is None:
             value = db.execute(self.query.value).fetchone()
             self.result.value = {k: value[k] for k in value.keys()}
@@ -74,6 +124,17 @@ class SqliteFetchOne(Component):
 
 @xai_component
 class SqliteFetchAll(Component):
+    """Fetches all rows from the SQLite database.
+
+    This component executes a query and fetches all rows from the database result set.
+
+    ##### inPorts:
+    - query: The SQL query to execute.
+    - args: A list of arguments to pass into the query (optional).
+
+    ##### outPorts:
+    - result: A list of rows, each returned as a dictionary.
+    """
     query: InCompArg[str]
     args: InArg[dynalist]
     result: OutArg[list]
