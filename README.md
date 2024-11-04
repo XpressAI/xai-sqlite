@@ -1,4 +1,4 @@
-<p>
+<p align="center">
   <a href="https://xircuits.io/docs/category/developer-guide">Developer Guides</a> •
   <a href="https://github.com/XpressAI/xircuits/blob/master/CONTRIBUTING.md">Contribute</a> •
   <a href="https://www.xpress.ai/blog/">Blog</a> •
