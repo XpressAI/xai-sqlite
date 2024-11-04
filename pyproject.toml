@@ -1,0 +1,15 @@
+[project]
+name = "xai-sqlite"
+version = "0.1.0"
+description = "Xircuits component library for sqlite"
+authors = [{ name = "XpressAI", email = "eduardo@xpress.ai" }]
+license = "Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/XpressAI/xai-sqlite"
+keywords = ["xircuits", "sqlite"]
+
+# Xircuits-specific configurations
+[tool.xircuits]
+default_example_path = "examples/sqlite_sample.xircuits"
+requirements_path = "requirements.txt"
+
